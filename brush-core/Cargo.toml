@@ -45,11 +45,31 @@ thiserror = "2.0.18"
 tracing = "0.1.44"
 
 [target.'cfg(target_family = "wasm")'.dependencies]
-tokio = { version = "1.52.3", features = ["io-util", "macros", "rt", "sync"] }
+tokio = { version = "1.40", features = ["io-util", "macros", "rt", "sync"] }
 
-[target.'cfg(any(unix, windows))'.dependencies]
-hostname = "0.4.2"
-tokio = { version = "1.52.3", features = [
+[target.'cfg(target_os = "twizzler")'.dependencies]
+hostname = "0.4"
+# The wasm-shaped feature set: no `process`/`signal` (both reap via SIGCHLD, which mlibc does
+# not raise) and no `net` (pulls socket2, which has no twizzler arm). sys/twizzler.rs takes
+# those modules from `stubs`, which are built on std::process instead.
+tokio = { version = "1.40", features = ["io-util", "macros", "rt", "rt-multi-thread", "sync"] }
+# Same as the unix block below minus `uzers`: sys/twizzler.rs takes `users` from `stubs`,
+# because uzers reads a passwd database this system does not have.
+command-fds = "0.3.2"
+libc = "0.2"
+nix = { version = "0.31.2", features = [
+    "fs",
+    "poll",
+    "process",
+    "signal",
+    "term",
+    "user",
+] }
+terminfo = "0.9.0"
+
+[target.'cfg(all(any(unix, windows), not(target_os = "twizzler")))'.dependencies]
+hostname = "0.4"
+tokio = { version = "1.40", features = [
     "io-util",
     "macros",
     "net",
@@ -60,13 +80,9 @@ tokio = { version = "1.52.3", features = [
     "sync",
 ] }
 
-[target.'cfg(windows)'.dependencies]
-check_elevation = "0.2.7"
-whoami = "2.1.1"
-
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(all(unix, not(target_os = "twizzler")))'.dependencies]
 command-fds = "0.3.2"
-libc = "0.2.183"
+libc = "0.2"
 nix = { version = "0.31.2", features = [
     "fs",
     "poll",

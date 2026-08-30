@@ -105,7 +105,7 @@ mod trap;
 mod true_;
 #[cfg(feature = "builtin.type")]
 mod type_;
-#[cfg(all(feature = "builtin.ulimit", unix))]
+#[cfg(all(feature = "builtin.ulimit", unix, not(target_os = "twizzler")))]
 mod ulimit;
 #[cfg(all(feature = "builtin.umask", unix))]
 mod umask;

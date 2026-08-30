@@ -131,7 +131,7 @@ pub fn default_builtins<SE: brush_core::ShellExtensions>(
     m.insert("true".into(), simple_builtin::<true_::TrueCommand, SE>());
     #[cfg(feature = "builtin.type")]
     m.insert("type".into(), builtin::<type_::TypeCommand, SE>());
-    #[cfg(all(feature = "builtin.ulimit", unix))]
+    #[cfg(all(feature = "builtin.ulimit", unix, not(target_os = "twizzler")))]
     m.insert("ulimit".into(), builtin::<ulimit::ULimitCommand, SE>());
     #[cfg(all(feature = "builtin.umask", unix))]
     m.insert("umask".into(), builtin::<umask::UmaskCommand, SE>());

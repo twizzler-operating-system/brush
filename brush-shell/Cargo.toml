@@ -98,15 +98,27 @@ human-panic = "2.0.6"
 brush-interactive = { version = "^0.4.0", path = "../brush-interactive", features = [
     "minimal",
 ] }
-tokio = { version = "1.52.3", features = ["rt", "sync"] }
+tokio = { version = "1.40", features = ["rt", "sync"] }
 
-[target.'cfg(any(unix, windows))'.dependencies]
+# Twizzler takes the same `minimal` input backend as the no-unix/no-windows arm above.
+# `basic`/`reedline` need crossterm and reedline; both look portable here (our crossterm port
+# is 0.29, the version reedline wants) but neither is needed to get the shell itself running.
+[target.'cfg(target_os = "twizzler")'.dependencies]
+brush-interactive = { version = "^0.4.0", path = "../brush-interactive", features = [
+    "minimal",
+] }
+# Not for the input backend -- `minimal` needs none -- but for the terminal reset in
+# entry.rs's panic path, which is gated on `any(unix, windows)` and so applies here.
+crossterm = "0.29.0"
+tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "sync"] }
+
+[target.'cfg(all(any(unix, windows), not(target_os = "twizzler")))'.dependencies]
 brush-interactive = { version = "^0.4.0", path = "../brush-interactive", features = [
     "basic",
     "reedline",
 ] }
 crossterm = "0.29.0"
-tokio = { version = "1.52.3", features = ["rt", "rt-multi-thread", "sync"] }
+tokio = { version = "1.40", features = ["rt", "rt-multi-thread", "sync"] }
 
 [target.wasm32-unknown-unknown.dependencies]
 getrandom = { version = "0.4.2", features = ["wasm_js"] }

@@ -1,3 +1,7 @@
+// Twizzler takes these from `stubs` (see sys/twizzler.rs). Gated out rather than merely
+// unused: compiling them would still require `uzers`, `tokio::net::unix::pipe` and
+// `tokio::signal`, none of which exist on this target.
+#[cfg(not(target_os = "twizzler"))]
 pub mod async_pipe;
 pub mod commands;
 pub(crate) mod env;
@@ -7,10 +11,14 @@ pub mod input;
 pub(crate) mod network;
 pub mod poll;
 use crate::error;
+#[cfg(not(target_os = "twizzler"))]
 pub use crate::sys::tokio_process as process;
+#[cfg(not(target_os = "twizzler"))]
 pub mod resource;
+#[cfg(not(target_os = "twizzler"))]
 pub mod signal;
 pub mod terminal;
+#[cfg(not(target_os = "twizzler"))]
 pub(crate) mod users;
 
 /// Platform-specific errors.

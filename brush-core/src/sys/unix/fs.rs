@@ -137,7 +137,13 @@ fn confstr_cs_path() -> Result<Option<PathBuf>, std::io::Error> {
     {
         Ok(Some(PathBuf::from(ANDROID_DEFPATH)))
     }
-    #[cfg(not(target_os = "android"))]
+    // No confstr()/_CS_PATH in this libc. The caller already treats `None` as "ask the
+    // hard-coded defaults instead", which is the right answer here rather than a stub value.
+    #[cfg(target_os = "twizzler")]
+    {
+        Ok(None)
+    }
+    #[cfg(not(any(target_os = "android", target_os = "twizzler")))]
     {
         let value = confstr(nix::libc::_CS_PATH)?;
 
@@ -156,6 +162,7 @@ fn confstr_cs_path() -> Result<Option<PathBuf>, std::io::Error> {
 /// N.B. We would strongly prefer to use a safe API exposed (in an idiomatic way) by nix
 /// or similar. Until that exists, we accept the need to make the unsafe call directly.
 #[cfg(not(target_os = "android"))]
+#[cfg(not(any(target_os = "android", target_os = "twizzler")))]
 fn confstr(name: nix::libc::c_int) -> Result<Option<std::ffi::OsString>, std::io::Error> {
     // SAFETY:
     // Calling `confstr` with a null pointer and size 0 is a documented way to query
