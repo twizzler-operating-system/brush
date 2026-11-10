@@ -1768,7 +1768,8 @@ pub(crate) async fn setup_redirect(
                             .parse::<ShellFd>()
                             .map_err(|_| error::ErrorKind::InvalidRedirection)?;
 
-                        // Reference the same open file as the source fd (shared handle; no OS-level duplication).
+                        // Reference the same open file as the source fd (shared handle; no OS-level
+                        // duplication).
                         let Some(target_file) = params.try_fd(shell, source_fd_num) else {
                             return Err(error::ErrorKind::BadFileDescriptor(source_fd_num).into());
                         };

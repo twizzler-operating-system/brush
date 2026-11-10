@@ -15,6 +15,7 @@ pub(crate) async fn complete_async(
     tokio::pin!(completion_future);
 
     // Wait for the completions to come back or interruption, whichever happens first.
+    #[cfg(not(target_os = "twizzler"))]
     let result = tokio::select! {
         result = &mut completion_future => {
             result
@@ -23,6 +24,15 @@ pub(crate) async fn complete_async(
             Err(brush_core::ErrorKind::Interrupted.into())
         },
     };
+
+    // Twizzler raises no signals, so tokio's `signal` feature is not enabled for this target (see
+    // brush-core's Cargo.toml) and `tokio::signal` does not exist to select on. Racing the
+    // completion against a future that can never resolve would be equivalent anyway -- brush-core's
+    // own `sys::signal::await_ctrl_c` is a pending-forever stub here -- so the race is dropped
+    // rather than faked. Note this is the one place brush-interactive reaches for tokio's signals
+    // directly instead of going through `brush_core::sys::signal`, which is `pub(crate)`.
+    #[cfg(target_os = "twizzler")]
+    let result = completion_future.await;
 
     let mut completions = result.unwrap_or_else(|_| brush_core::completion::Completions {
         insertion_index: pos,

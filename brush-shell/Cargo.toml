@@ -100,12 +100,14 @@ brush-interactive = { version = "^0.4.0", path = "../brush-interactive", feature
 ] }
 tokio = { version = "1.40", features = ["rt", "sync"] }
 
-# Twizzler takes the same `minimal` input backend as the no-unix/no-windows arm above.
-# `basic`/`reedline` need crossterm and reedline; both look portable here (our crossterm port
-# is 0.29, the version reedline wants) but neither is needed to get the shell itself running.
+# Same input backends as the unix/windows arm. reedline 0.49 wants crossterm 0.29, which is
+# exactly what src/ports/crossterm provides. Its file-backed history takes an fd-lock, which
+# reaches mlibc's sys_flock -- implemented (sysdeps.cpp:3373): it validates the request and
+# accepts it, there being no cross-compartment advisory locking to honour.
 [target.'cfg(target_os = "twizzler")'.dependencies]
 brush-interactive = { version = "^0.4.0", path = "../brush-interactive", features = [
-    "minimal",
+    "basic",
+    "reedline",
 ] }
 # Not for the input backend -- `minimal` needs none -- but for the terminal reset in
 # entry.rs's panic path, which is gated on `any(unix, windows)` and so applies here.

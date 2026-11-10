@@ -1164,7 +1164,6 @@ impl<'a, R: ?Sized + std::io::BufRead> Tokenizer<'a, R> {
             // was appended to it rather than starting a comment. `$( #'<newline>)` then failed to
             // tokenize with an unterminated single quote, while `$(  #'<newline>)` — two blanks —
             // was fine.
-            //
             else if !state.token_is_operator
                 && (state.started_token() || matches!(terminating_char, Some('}')))
                 && !(c == '#' && state.only_blanks_so_far())
